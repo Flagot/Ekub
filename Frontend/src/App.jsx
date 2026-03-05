@@ -1,7 +1,11 @@
 import { Link, Navigate, Route, Routes } from "react-router-dom";
+import LandingPage from "./pages/LandingPage";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
+import { clearAuthToken, getAuthToken } from "./lib/authClient";
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("ekub_token");
+  const token = getAuthToken();
   return token ? children : <Navigate to="/login" replace />;
 };
 
@@ -13,37 +17,21 @@ const Layout = ({ children }) => (
           Ekub
         </Link>
         <nav className="flex items-center gap-4 text-sm font-medium text-slate-600">
+          <Link to="/dashboard">Dashboard</Link>
           <Link to="/login">Login</Link>
           <Link to="/signup">Sign up</Link>
+          <button
+            className="rounded border border-slate-300 px-2 py-1 text-xs"
+            onClick={clearAuthToken}
+            type="button"
+          >
+            Log out
+          </button>
         </nav>
       </div>
     </header>
     <main className="mx-auto w-full max-w-5xl px-4 py-8">{children}</main>
   </div>
-);
-
-const LandingPage = () => (
-  <section className="rounded-2xl border bg-white p-8 shadow-soft">
-    <h1 className="font-display text-3xl text-slate-900">Build your savings circle</h1>
-    <p className="mt-3 max-w-2xl text-slate-600">
-      Start a rotating savings group, invite members, and track payouts over each
-      contribution cycle.
-    </p>
-  </section>
-);
-
-const LoginPage = () => (
-  <section className="card max-w-md">
-    <h2 className="text-xl font-semibold text-slate-900">Login</h2>
-    <p className="mt-2 text-sm text-slate-600">Auth form wiring comes next.</p>
-  </section>
-);
-
-const SignupPage = () => (
-  <section className="card max-w-md">
-    <h2 className="text-xl font-semibold text-slate-900">Create account</h2>
-    <p className="mt-2 text-sm text-slate-600">Signup form wiring comes next.</p>
-  </section>
 );
 
 const DashboardPage = () => (
