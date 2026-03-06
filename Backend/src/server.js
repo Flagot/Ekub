@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
 import morgan from "morgan";
+import authRouter from "./routes/auth.routes.js";
 
 dotenv.config();
 
@@ -23,6 +24,8 @@ app.use(morgan("dev"));
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
+
+app.use("/api/auth", authRouter);
 
 const startServer = async () => {
   if (!MONGO_URI) {
