@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { authClient, setAuthToken } from "../lib/authClient";
+import { authClient } from "../lib/authClient";
+import { setAuthToken } from "../lib/session";
 
 const LoginPage = () => {
   const navigate = useNavigate();
