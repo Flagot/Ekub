@@ -4,6 +4,7 @@ import express from "express";
 import mongoose from "mongoose";
 import morgan from "morgan";
 import authRouter from "./routes/auth.routes.js";
+import groupRouter from "./routes/group.routes.js";
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/groups", groupRouter);
 
 const startServer = async () => {
   if (!MONGO_URI) {
