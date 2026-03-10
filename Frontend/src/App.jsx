@@ -4,6 +4,7 @@ import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import { authClient } from "./lib/authClient";
+import { groupClient } from "./lib/groupClient";
 import { clearAuthToken, getAuthToken } from "./lib/session";
 
 const ProtectedRoute = ({ children }) => {
@@ -28,6 +29,7 @@ const Layout = ({ children }) => {
           </Link>
           <nav className="flex items-center gap-4 text-sm font-medium text-slate-600">
             <Link to="/dashboard">Dashboard</Link>
+            <Link to="/groups">My Groups</Link>
             <Link to="/login">Login</Link>
             <Link to="/signup">Sign up</Link>
             <button
@@ -92,6 +94,159 @@ const DashboardPage = () => {
   );
 };
 
+const GroupsPage = () => {
+  const [groups, setGroups] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [form, setForm] = useState({
+    name: "",
+    contributionAmount: "",
+    maxMembers: "",
+    frequency: "monthly",
+  });
+
+  const loadGroups = async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      const data = await groupClient.listMine();
+      setGroups(data.groups || []);
+    } catch (_error) {
+      setError("Could not load groups right now.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadGroups();
+  }, []);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCreate = async (event) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setError("");
+    try {
+      await groupClient.create({
+        name: form.name,
+        contributionAmount: Number(form.contributionAmount),
+        maxMembers: Number(form.maxMembers),
+        frequency: form.frequency,
+      });
+      setForm({
+        name: "",
+        contributionAmount: "",
+        maxMembers: "",
+        frequency: "monthly",
+      });
+      await loadGroups();
+    } catch (submitError) {
+      setError(submitError?.response?.data?.message || "Failed to create group.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <section className="space-y-6">
+      <div className="card">
+        <h2 className="text-xl font-semibold text-slate-900">My Groups</h2>
+        <p className="mt-1 text-sm text-slate-600">
+          Create a new Ekub group and track all groups you belong to.
+        </p>
+      </div>
+
+      <form className="card grid gap-4 md:grid-cols-2" onSubmit={handleCreate}>
+        <label className="block">
+          <span className="mb-1 block text-sm font-medium text-slate-700">Group name</span>
+          <input
+            className="w-full rounded-lg border border-slate-300 px-3 py-2"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            required
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-sm font-medium text-slate-700">
+            Contribution amount
+          </span>
+          <input
+            className="w-full rounded-lg border border-slate-300 px-3 py-2"
+            name="contributionAmount"
+            type="number"
+            min="1"
+            value={form.contributionAmount}
+            onChange={handleChange}
+            required
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-sm font-medium text-slate-700">Max members</span>
+          <input
+            className="w-full rounded-lg border border-slate-300 px-3 py-2"
+            name="maxMembers"
+            type="number"
+            min="2"
+            value={form.maxMembers}
+            onChange={handleChange}
+            required
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-sm font-medium text-slate-700">Frequency</span>
+          <select
+            className="w-full rounded-lg border border-slate-300 px-3 py-2"
+            name="frequency"
+            value={form.frequency}
+            onChange={handleChange}
+          >
+            <option value="weekly">Weekly</option>
+            <option value="biweekly">Bi-weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </label>
+        <div className="md:col-span-2">
+          <button
+            className="rounded-lg bg-primary-600 px-4 py-2 font-semibold text-white hover:bg-primary-700 disabled:opacity-70"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Creating..." : "Create Group"}
+          </button>
+        </div>
+      </form>
+
+      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+
+      <div className="grid gap-4 md:grid-cols-2">
+        {isLoading ? <p className="text-sm text-slate-600">Loading groups...</p> : null}
+        {!isLoading && groups.length === 0 ? (
+          <p className="card text-sm text-slate-600">No groups yet. Create your first one.</p>
+        ) : null}
+        {groups.map((group) => (
+          <article className="card" key={group._id}>
+            <h3 className="text-lg font-semibold text-slate-900">{group.name}</h3>
+            <p className="mt-2 text-sm text-slate-600">
+              Contribution: {group.contributionAmount} | Members: {group.members?.length}/
+              {group.maxMembers}
+            </p>
+            <p className="mt-1 text-xs uppercase tracking-wide text-slate-500">
+              {group.frequency} - {group.status}
+            </p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+};
+
 const App = () => {
   return (
     <Layout>
@@ -104,6 +259,14 @@ const App = () => {
           element={
             <ProtectedRoute>
               <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/groups"
+          element={
+            <ProtectedRoute>
+              <GroupsPage />
             </ProtectedRoute>
           }
         />
