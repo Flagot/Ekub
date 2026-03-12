@@ -99,6 +99,7 @@ const GroupsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [form, setForm] = useState({
     name: "",
     contributionAmount: "",
@@ -130,13 +131,31 @@ const GroupsPage = () => {
 
   const handleCreate = async (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
+
+    const amount = Number(form.contributionAmount);
+    const memberLimit = Number(form.maxMembers);
+    if (!form.name.trim()) {
+      setError("Group name is required.");
+      return;
+    }
+    if (!Number.isFinite(amount) || amount < 1) {
+      setError("Contribution amount must be at least 1.");
+      return;
+    }
+    if (!Number.isFinite(memberLimit) || memberLimit < 2) {
+      setError("Max members must be at least 2.");
+      return;
+    }
+
     setIsSubmitting(true);
     setError("");
+    setSuccess("");
     try {
       await groupClient.create({
-        name: form.name,
-        contributionAmount: Number(form.contributionAmount),
-        maxMembers: Number(form.maxMembers),
+        name: form.name.trim(),
+        contributionAmount: amount,
+        maxMembers: memberLimit,
         frequency: form.frequency,
       });
       setForm({
@@ -145,6 +164,7 @@ const GroupsPage = () => {
         maxMembers: "",
         frequency: "monthly",
       });
+      setSuccess("Group created successfully.");
       await loadGroups();
     } catch (submitError) {
       setError(submitError?.response?.data?.message || "Failed to create group.");
@@ -224,6 +244,7 @@ const GroupsPage = () => {
       </form>
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {success ? <p className="text-sm text-green-700">{success}</p> : null}
 
       <div className="grid gap-4 md:grid-cols-2">
         {isLoading ? <p className="text-sm text-slate-600">Loading groups...</p> : null}
