@@ -47,3 +47,24 @@ export const listMyGroups = async (req, res) => {
 
   return res.json({ groups });
 };
+
+export const getGroupById = async (req, res) => {
+  const { groupId } = req.params;
+  const group = await EkubGroup.findById(groupId)
+    .populate("createdBy", "name email")
+    .populate("members.user", "name email");
+
+  if (!group) {
+    return res.status(404).json({ message: "Group not found." });
+  }
+
+  const isMember = group.members.some(
+    (member) => member.user?._id?.toString() === req.user._id.toString()
+  );
+
+  if (!isMember) {
+    return res.status(403).json({ message: "You are not a member of this group." });
+  }
+
+  return res.json({ group });
+};
