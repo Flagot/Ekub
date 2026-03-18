@@ -3,6 +3,9 @@ import { groupClient } from "../lib/groupClient";
 
 const GroupsPage = () => {
   const [groups, setGroups] = useState([]);
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [detailError, setDetailError] = useState("");
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -80,8 +83,23 @@ const GroupsPage = () => {
     }
   };
 
+  const handleSelectGroup = async (groupId) => {
+    setDetailError("");
+    setIsDetailLoading(true);
+    try {
+      const data = await groupClient.getById(groupId);
+      setSelectedGroup(data.group || null);
+    } catch (_error) {
+      setDetailError("Could not load group details.");
+      setSelectedGroup(null);
+    } finally {
+      setIsDetailLoading(false);
+    }
+  };
+
   return (
-    <section className="space-y-6">
+    <section className="grid gap-6 lg:grid-cols-3">
+      <div className="space-y-6 lg:col-span-2">
       <div className="card">
         <h2 className="text-xl font-semibold text-slate-900">My Groups</h2>
         <p className="mt-1 text-sm text-slate-600">
@@ -159,7 +177,18 @@ const GroupsPage = () => {
           <p className="card text-sm text-slate-600">No groups yet. Create your first one.</p>
         ) : null}
         {groups.map((group) => (
-          <article className="card" key={group._id}>
+          <article
+            className="card cursor-pointer transition hover:border-primary-300"
+            key={group._id}
+            onClick={() => handleSelectGroup(group._id)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                handleSelectGroup(group._id);
+              }
+            }}
+          >
             <h3 className="text-lg font-semibold text-slate-900">{group.name}</h3>
             <p className="mt-2 text-sm text-slate-600">
               Contribution: {group.contributionAmount} | Members: {group.members?.length}/
@@ -171,6 +200,47 @@ const GroupsPage = () => {
           </article>
         ))}
       </div>
+      </div>
+
+      <aside className="card h-fit lg:sticky lg:top-6">
+        <h3 className="text-lg font-semibold text-slate-900">Group Detail</h3>
+        {!selectedGroup && !isDetailLoading && !detailError ? (
+          <p className="mt-2 text-sm text-slate-600">
+            Select a group card to see member and owner details.
+          </p>
+        ) : null}
+        {isDetailLoading ? <p className="mt-2 text-sm text-slate-600">Loading detail...</p> : null}
+        {detailError ? <p className="mt-2 text-sm text-red-600">{detailError}</p> : null}
+        {selectedGroup ? (
+          <div className="mt-3 space-y-2 text-sm text-slate-700">
+            <p>
+              <span className="font-medium text-slate-900">Name:</span> {selectedGroup.name}
+            </p>
+            <p>
+              <span className="font-medium text-slate-900">Owner:</span>{" "}
+              {selectedGroup.createdBy?.name || selectedGroup.createdBy?.email || "Unknown"}
+            </p>
+            <p>
+              <span className="font-medium text-slate-900">Status:</span>{" "}
+              {selectedGroup.status}
+            </p>
+            <p>
+              <span className="font-medium text-slate-900">Members:</span>{" "}
+              {selectedGroup.members?.length || 0}/{selectedGroup.maxMembers}
+            </p>
+            <div>
+              <p className="font-medium text-slate-900">Member List</p>
+              <ul className="mt-1 list-disc space-y-1 pl-4">
+                {(selectedGroup.members || []).map((member) => (
+                  <li key={member._id}>
+                    {member.user?.name || member.user?.email || "Unknown member"} - {member.role}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ) : null}
+      </aside>
     </section>
   );
 };

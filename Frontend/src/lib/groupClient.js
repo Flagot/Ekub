@@ -9,4 +9,8 @@ export const groupClient = {
     const { data } = await apiClient.post("/groups", payload);
     return data;
   },
+  async getById(groupId) {
+    const { data } = await apiClient.get(`/groups/${groupId}`);
+    return data;
+  },
 };
