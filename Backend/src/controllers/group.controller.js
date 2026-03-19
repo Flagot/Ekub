@@ -68,3 +68,25 @@ export const getGroupById = async (req, res) => {
 
   return res.json({ group });
 };
+
+export const requestJoinGroup = async (req, res) => {
+  const { groupId } = req.params;
+  const group = await EkubGroup.findById(groupId);
+
+  if (!group) {
+    return res.status(404).json({ message: "Group not found." });
+  }
+
+  if (group.members.length >= group.maxMembers) {
+    return res.status(400).json({ message: "Group is already full." });
+  }
+
+  group.members.push({
+    user: req.user._id,
+    role: "member",
+    status: "pending",
+  });
+
+  await group.save();
+  return res.status(201).json({ message: "Join request sent.", group });
+};
