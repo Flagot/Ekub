@@ -13,6 +13,7 @@ const ProtectedRoute = ({ children }) => {
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
+  const isAuthenticated = Boolean(getAuthToken());
 
   const handleLogout = () => {
     clearAuthToken();
@@ -27,17 +28,24 @@ const Layout = ({ children }) => {
             Ekub
           </Link>
           <nav className="flex items-center gap-4 text-sm font-medium text-slate-600">
-            <Link to="/dashboard">Dashboard</Link>
-            <Link to="/groups">My Groups</Link>
-            <Link to="/login">Login</Link>
-            <Link to="/signup">Sign up</Link>
-            <button
-              className="rounded border border-slate-300 px-2 py-1 text-xs"
-              onClick={handleLogout}
-              type="button"
-            >
-              Log out
-            </button>
+            {isAuthenticated ? (
+              <>
+                <Link to="/dashboard">Dashboard</Link>
+                <Link to="/groups">My Groups</Link>
+                <button
+                  className="rounded border border-slate-300 px-2 py-1 text-xs"
+                  onClick={handleLogout}
+                  type="button"
+                >
+                  Log out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login">Login</Link>
+                <Link to="/signup">Sign up</Link>
+              </>
+            )}
           </nav>
         </div>
       </header>
