@@ -11,6 +11,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 const MONGO_URI = process.env.MONGO_URI;
+const MONGO_DB_NAME = process.env.MONGO_DB_NAME || "Ekub";
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5173";
 
 app.use(
@@ -34,7 +35,7 @@ const startServer = async () => {
     throw new Error("MONGO_URI is required. Add it to Backend/.env");
   }
 
-  await mongoose.connect(MONGO_URI);
+  await mongoose.connect(MONGO_URI, { dbName: MONGO_DB_NAME });
   app.listen(PORT, () => {
     console.log(`Backend listening on http://localhost:${PORT}`);
   });

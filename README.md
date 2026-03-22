@@ -35,7 +35,8 @@ Create local env files before running:
 - `Backend/.env`
 - `Frontend/.env` (if needed)
 
-See `.env.example` files in each app once they are added.
+For backend, use `Backend/.env.example` as your starting point.
+If Mongo reports a database case conflict on Windows, keep `MONGO_DB_NAME=Ekub`.
 
 ### 3) Run development servers
 

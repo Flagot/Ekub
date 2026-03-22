@@ -81,6 +81,13 @@ export const requestJoinGroup = async (req, res) => {
     return res.status(400).json({ message: "Group is already full." });
   }
 
+  const alreadyMember = group.members.some(
+    (member) => member.user?.toString() === req.user._id.toString()
+  );
+  if (alreadyMember) {
+    return res.status(409).json({ message: "You already joined or requested this group." });
+  }
+
   group.members.push({
     user: req.user._id,
     role: "member",
