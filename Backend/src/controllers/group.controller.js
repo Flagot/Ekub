@@ -1,7 +1,7 @@
 import EkubGroup from "../models/ekubGroup.model.js";
 
 export const createGroup = async (req, res) => {
-  const { name, contributionAmount, maxMembers, frequency } = req.body;
+  const { name, contributionAmount, maxMembers, frequency, visibility } = req.body;
   const normalizedName = typeof name === "string" ? name.trim() : "";
   const amount = Number(contributionAmount);
   const memberLimit = Number(maxMembers);
@@ -25,6 +25,7 @@ export const createGroup = async (req, res) => {
     contributionAmount: amount,
     maxMembers: memberLimit,
     frequency,
+    visibility: visibility === "public" ? "public" : "private",
     createdBy: req.user._id,
     members: [
       {
@@ -36,6 +37,31 @@ export const createGroup = async (req, res) => {
   });
 
   return res.status(201).json({ group });
+};
+
+export const listPublicGroupsGuest = async (_req, res) => {
+  const groups = await EkubGroup.find({
+    visibility: "public",
+    status: { $in: ["draft", "active"] },
+  })
+    .sort({ createdAt: -1 })
+    .select("name frequency createdAt visibility members contributionAmount")
+    .lean();
+
+  const response = groups.map((group) => ({
+    _id: group._id,
+    name: group.name,
+    contributionFrequency: group.frequency,
+    startDate: group.createdAt,
+    visibility: group.visibility,
+    contributorCount: group.members?.length ?? 0,
+    totalSum: (group.members || []).reduce(
+      (sum, member) => sum + (member?.amount || group.contributionAmount || 0),
+      0
+    ),
+  }));
+
+  return res.json(response);
 };
 
 export const listMyGroups = async (req, res) => {

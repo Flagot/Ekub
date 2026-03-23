@@ -52,6 +52,11 @@ const ekubGroupSchema = new mongoose.Schema(
       enum: ["draft", "active", "completed"],
       default: "draft",
     },
+    visibility: {
+      type: String,
+      enum: ["private", "public"],
+      default: "private",
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

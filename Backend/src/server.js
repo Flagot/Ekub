@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import morgan from "morgan";
 import authRouter from "./routes/auth.routes.js";
 import groupRouter from "./routes/group.routes.js";
+import { listPublicGroupsGuest } from "./controllers/group.controller.js";
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use(morgan("dev"));
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
+app.get("/api/public/ekubs", listPublicGroupsGuest);
 
 app.use("/api/auth", authRouter);
 app.use("/api/groups", groupRouter);
