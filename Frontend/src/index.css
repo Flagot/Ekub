@@ -1,22 +1,49 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  color: #0f172a;
-  background: #f8fafc;
-}
-
-* {
-  box-sizing: border-box;
+@layer base {
+  html {
+    @apply antialiased;
+  }
+  body {
+    @apply bg-stone-100 text-stone-900 font-sans;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-tight text-stone-900;
+  }
 }
 
 @layer components {
-  .card {
-    @apply rounded-2xl border border-slate-200 bg-white p-6 shadow-soft;
+  .input-field {
+    @apply w-full rounded-xl border border-stone-200 bg-white px-3.5 py-2.5 text-sm text-stone-900 shadow-sm transition-colors placeholder:text-stone-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/25;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-60;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-sm font-semibold text-stone-700 shadow-sm transition hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-stone-200;
+  }
+  .card-surface {
+    @apply rounded-2xl border border-stone-200/90 bg-white shadow-card;
+  }
+  .modal-backdrop {
+    @apply fixed inset-0 z-50 overflow-y-auto bg-stone-900/50 backdrop-blur-[2px];
+  }
+  .modal-panel {
+    @apply w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl border border-stone-200/90 bg-white p-6 shadow-elevated;
+  }
+  .modal-panel-wide {
+    @apply w-full max-w-4xl max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl border border-stone-200/90 bg-white p-6 shadow-elevated;
+  }
+  .modal-panel-lg {
+    @apply w-full max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl border border-stone-200/90 bg-white p-6 shadow-elevated;
+  }
+  .modal-panel-2xl {
+    @apply w-full max-w-2xl max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl border border-stone-200/90 bg-white p-6 shadow-elevated;
   }
 }
