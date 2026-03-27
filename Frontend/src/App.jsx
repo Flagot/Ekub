@@ -1,62 +1,53 @@
-import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
+import AppLayout from "./components/AppLayout";
 import DashboardPage from "./pages/DashboardPage";
 import GroupsPage from "./pages/GroupsPage";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
-import { clearAuthToken, getAuthToken } from "./lib/session";
+import { authClient } from "./lib/authClient";
+import { getAuthToken } from "./lib/session";
 
 const ProtectedRoute = ({ children }) => {
   const token = getAuthToken();
   return token ? children : <Navigate to="/login" replace />;
 };
 
-const Layout = ({ children }) => {
-  const navigate = useNavigate();
-  const isAuthenticated = Boolean(getAuthToken());
+function useCurrentUser() {
+  const [user, setUser] = useState(null);
 
-  const handleLogout = () => {
-    clearAuthToken();
-    navigate("/login");
-  };
+  useEffect(() => {
+    let active = true;
+    const token = getAuthToken();
+    if (!token) {
+      setUser(null);
+      return;
+    }
 
-  return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-3">
-          <Link className="text-lg font-semibold text-primary-700" to="/">
-            Ekub
-          </Link>
-          <nav className="flex items-center gap-4 text-sm font-medium text-slate-600">
-            {isAuthenticated ? (
-              <>
-                <Link to="/dashboard">Dashboard</Link>
-                <Link to="/groups">My Groups</Link>
-                <button
-                  className="rounded border border-slate-300 px-2 py-1 text-xs"
-                  onClick={handleLogout}
-                  type="button"
-                >
-                  Log out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/login">Login</Link>
-                <Link to="/signup">Sign up</Link>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
-      <main className="mx-auto w-full max-w-5xl px-4 py-8">{children}</main>
-    </div>
-  );
-};
+    (async () => {
+      try {
+        const data = await authClient.me();
+        if (active) setUser(data?.user ?? null);
+      } catch (_error) {
+        if (active) setUser(null);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return user;
+}
 
 const App = () => {
+  const user = useCurrentUser();
+  const hasToken = Boolean(getAuthToken());
+
   return (
-    <Layout>
+    <AppLayout user={user || (hasToken ? {} : null)}>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
@@ -78,7 +69,7 @@ const App = () => {
           }
         />
       </Routes>
-    </Layout>
+    </AppLayout>
   );
 };
 
