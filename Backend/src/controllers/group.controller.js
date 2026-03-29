@@ -74,6 +74,31 @@ export const listMyGroups = async (req, res) => {
   return res.json({ groups });
 };
 
+export const getDashboard = async (req, res) => {
+  const userId = req.user._id;
+
+  const groups = await EkubGroup.find({
+    "members.user": userId,
+    status: { $in: ["draft", "active"] },
+  })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  const activeEkubs = groups.length;
+  const upcomingPayments = groups.slice(0, 5).map((group) => ({
+    groupId: group._id,
+    groupName: group.name,
+    amount: group.contributionAmount || 0,
+    dueDate: group.createdAt,
+    status: group.status,
+  }));
+
+  return res.json({
+    activeEkubs,
+    upcomingPayments,
+  });
+};
+
 export const getGroupById = async (req, res) => {
   const { groupId } = req.params;
   const group = await EkubGroup.findById(groupId)
