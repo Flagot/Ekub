@@ -42,7 +42,8 @@ export default function LandingPage() {
               Rotating savings, made simple
             </p>
             <h1 className="mt-4 font-display text-4xl leading-[1.1] text-stone-900 sm:text-5xl lg:text-[3.25rem]">
-              Save together. <span className="text-primary-700">Payout in turn.</span>
+              Save together.{" "}
+              <span className="text-primary-700">Payout in turn.</span>
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-stone-600">
               Run or join Ekub groups: fixed contributions each cycle, clear
@@ -84,7 +85,7 @@ export default function LandingPage() {
                 className="h-5 w-5 animate-spin rounded-full border-2 border-primary-200 border-t-primary-600"
                 aria-hidden
               />
-              <span>Loading groups...</span>
+              <span>Loading groups…</span>
             </div>
           ) : publicEkubs.length === 0 ? (
             <div className="card-surface border-dashed p-10 text-center">
@@ -114,7 +115,7 @@ export default function LandingPage() {
                         {g.contributionFrequency} · starts{" "}
                         {g.startDate
                           ? new Date(g.startDate).toLocaleDateString()
-                          : "-"}
+                          : "—"}
                       </p>
                     </div>
                     <span className="shrink-0 rounded-full bg-primary-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-primary-800">

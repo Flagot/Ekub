@@ -49,9 +49,20 @@ const App = () => {
   return (
     <AppLayout user={user || (hasToken ? {} : null)}>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
+        <Route
+          path="/"
+          element={
+            hasToken ? <Navigate to="/dashboard" replace /> : <LandingPage />
+          }
+        />
+        <Route
+          path="/login"
+          element={hasToken ? <Navigate to="/dashboard" replace /> : <LoginPage />}
+        />
+        <Route
+          path="/signup"
+          element={hasToken ? <Navigate to="/dashboard" replace /> : <SignupPage />}
+        />
         <Route
           path="/dashboard"
           element={
