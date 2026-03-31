@@ -1,17 +1,8 @@
-import axios from "axios";
-import { getAuthToken } from "./lib/session";
+import axios from 'axios';
 
-const apiClient = axios.create({
-  baseURL: "/api",
-  withCredentials: true,
+const api = axios.create({
+  baseURL: '/api',
+  withCredentials: true, // send cookies for better-auth session
 });
 
-apiClient.interceptors.request.use((config) => {
-  const token = getAuthToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-export default apiClient;
+export default api;
