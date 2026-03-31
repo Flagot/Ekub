@@ -9,9 +9,8 @@ import SignupPage from "./pages/SignupPage";
 import { authClient } from "./lib/authClient";
 import { getAuthToken } from "./lib/session";
 
-const ProtectedRoute = ({ children }) => {
-  const token = getAuthToken();
-  return token ? children : <Navigate to="/login" replace />;
+const ProtectedRoute = ({ children, hasToken }) => {
+  return hasToken ? children : <Navigate to="/login" replace />;
 };
 
 function useCurrentUser() {
@@ -43,8 +42,19 @@ function useCurrentUser() {
 }
 
 const App = () => {
+  const [authToken, setAuthTokenState] = useState(getAuthToken());
   const user = useCurrentUser();
-  const hasToken = Boolean(getAuthToken());
+  const hasToken = Boolean(authToken);
+
+  useEffect(() => {
+    const syncToken = () => setAuthTokenState(getAuthToken());
+    window.addEventListener("ekub-auth-changed", syncToken);
+    window.addEventListener("storage", syncToken);
+    return () => {
+      window.removeEventListener("ekub-auth-changed", syncToken);
+      window.removeEventListener("storage", syncToken);
+    };
+  }, []);
 
   return (
     <AppLayout user={user || (hasToken ? {} : null)}>
@@ -66,7 +76,7 @@ const App = () => {
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute hasToken={hasToken}>
               <DashboardPage />
             </ProtectedRoute>
           }
@@ -74,7 +84,7 @@ const App = () => {
         <Route
           path="/groups"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute hasToken={hasToken}>
               <GroupsPage />
             </ProtectedRoute>
           }
