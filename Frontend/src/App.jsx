@@ -13,13 +13,12 @@ const ProtectedRoute = ({ children, hasToken }) => {
   return hasToken ? children : <Navigate to="/login" replace />;
 };
 
-function useCurrentUser() {
+function useCurrentUser(authToken) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
     let active = true;
-    const token = getAuthToken();
-    if (!token) {
+    if (!authToken) {
       setUser(null);
       return;
     }
@@ -36,14 +35,14 @@ function useCurrentUser() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [authToken]);
 
   return user;
 }
 
 const App = () => {
   const [authToken, setAuthTokenState] = useState(getAuthToken());
-  const user = useCurrentUser();
+  const user = useCurrentUser(authToken);
   const hasToken = Boolean(authToken);
 
   useEffect(() => {
@@ -57,7 +56,7 @@ const App = () => {
   }, []);
 
   return (
-    <AppLayout user={user || (hasToken ? {} : null)}>
+    <AppLayout user={hasToken ? user || {} : null}>
       <Routes>
         <Route
           path="/"
