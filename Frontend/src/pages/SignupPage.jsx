@@ -1,15 +1,14 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { authClient } from "../lib/authClient";
-import { setAuthToken } from "../lib/session";
 
 export default function SignupPage() {
-  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/dashboard";
 
@@ -17,17 +16,20 @@ export default function SignupPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    try {
-      const data = await authClient.register({ name, email, password });
-      if (data?.token) {
-        setAuthToken(data.token);
-      }
+    const { data, error: err } = await authClient.signUp.email({
+      name,
+      email,
+      password,
+      callbackURL: redirectTo,
+    });
+    setLoading(false);
+    if (err) {
+      setError(err.message || "Sign up failed");
+      return;
+    }
+    if (data) {
+      await authClient.getSession();
       navigate(redirectTo, { replace: true });
-    } catch (submitError) {
-      const apiMessage = submitError?.response?.data?.message;
-      setError(apiMessage || "Sign up failed");
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -90,7 +92,9 @@ export default function SignupPage() {
               minLength={8}
               autoComplete="new-password"
             />
-            <p className="mt-1.5 text-xs text-stone-500">At least 8 characters</p>
+            <p className="mt-1.5 text-xs text-stone-500">
+              At least 8 characters
+            </p>
           </div>
           {error && (
             <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -102,7 +106,7 @@ export default function SignupPage() {
             disabled={loading}
             className="btn-primary w-full py-3 text-base"
           >
-            {loading ? "Creating account..." : "Create account"}
+            {loading ? "Creating account…" : "Create account"}
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-stone-600">

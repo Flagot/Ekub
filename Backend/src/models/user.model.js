@@ -1,27 +1,38 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
-const userSchema = new mongoose.Schema(
+const { Schema } = mongoose;
+
+const userSchema = new Schema(
   {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
+    fullName: { type: String, required: true, trim: true },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    passwordHash: { type: String, required: true },
+    phone: { type: String },
+    nationalId: { type: String }, // simple identity field for MVP
+    isVerified: { type: Boolean, default: false },
+    roles: {
+      type: [String],
+      enum: ['member', 'admin', 'superadmin'],
+      default: ['member'],
     },
-    email: {
+    status: {
       type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
-    passwordHash: {
-      type: String,
-      required: true,
+      enum: ['active', 'suspended', 'defaulted'],
+      default: 'active',
     },
   },
   { timestamps: true }
 );
 
-const User = mongoose.model("User", userSchema);
+userSchema.methods.comparePassword = function comparePassword(password) {
+  return bcrypt.compare(password, this.passwordHash);
+};
 
-export default User;
+userSchema.statics.hashPassword = async function hashPassword(password) {
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(password, salt);
+};
+
+export const User = mongoose.model('User', userSchema);
+

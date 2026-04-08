@@ -1,30 +1,31 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { authClient } from "../lib/authClient";
-import { setAuthToken } from "../lib/session";
 
 export default function LoginPage() {
-  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setLoading(true);
-    try {
-      const data = await authClient.login({ email, password });
-      if (data?.token) {
-        setAuthToken(data.token);
-      }
+    const { data, error: err } = await authClient.signIn.email({
+      email,
+      password,
+      callbackURL: "/dashboard",
+    });
+    setLoading(false);
+    if (err) {
+      setError(err.message || "Log in failed");
+      return;
+    }
+    if (data) {
+      await authClient.getSession();
       navigate("/dashboard", { replace: true });
-    } catch (submitError) {
-      const apiMessage = submitError?.response?.data?.message;
-      setError(apiMessage || "Log in failed");
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -91,7 +92,7 @@ export default function LoginPage() {
             disabled={loading}
             className="btn-primary w-full py-3 text-base"
           >
-            {loading ? "Logging in..." : "Log in"}
+            {loading ? "Logging in…" : "Log in"}
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-stone-600">

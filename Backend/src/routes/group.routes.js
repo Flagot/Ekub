@@ -1,20 +1,50 @@
-import { Router } from "express";
+import { Router } from 'express';
+import { authRequired } from '../middleware/auth.middleware.js';
 import {
   createGroup,
-  getDashboard,
-  getGroupById,
   listMyGroups,
-  requestJoinGroup,
-} from "../controllers/group.controller.js";
-import { requireAuth } from "../middleware/auth.middleware.js";
+  listPublicGroups,
+  getGroup,
+  updateGroup,
+  deleteGroup,
+  addMember,
+  removeMember,
+  requestToJoinGroup,
+  withdrawJoinRequest,
+  approveMember,
+  rejectMember,
+  setPayoutOrder,
+  getDashboard,
+  getGroupSchedule,
+  getGroupPaymentTracking,
+  getMemberCycleData,
+  getGroupMyContributions,
+  getGroupWinners,
+} from '../controllers/group.controller.js';
 
-const groupRouter = Router();
+const router = Router();
 
-groupRouter.use(requireAuth);
-groupRouter.post("/", createGroup);
-groupRouter.get("/dashboard", getDashboard);
-groupRouter.get("/mine", listMyGroups);
-groupRouter.post("/:groupId/join", requestJoinGroup);
-groupRouter.get("/:groupId", getGroupById);
+router.use(authRequired);
 
-export default groupRouter;
+router.get('/dashboard', getDashboard);
+router.get('/mine', listMyGroups);
+router.get('/public', listPublicGroups);
+router.post('/', createGroup);
+router.get('/:groupId', getGroup);
+router.patch('/:groupId', updateGroup);
+router.delete('/:groupId', deleteGroup);
+router.post('/:groupId/members', addMember);
+router.delete('/:groupId/members/:memberId', removeMember);
+router.get('/:groupId/schedule', getGroupSchedule);
+router.get('/:groupId/payment-tracking', getGroupPaymentTracking);
+router.get('/:groupId/cycles/:cycleNumber/members/:userId', getMemberCycleData);
+router.get('/:groupId/my-contributions', getGroupMyContributions);
+router.get('/:groupId/winners', getGroupWinners);
+router.post('/:groupId/join', requestToJoinGroup);
+router.post('/:groupId/withdraw-request', withdrawJoinRequest);
+router.post('/:groupId/members/:memberId/approve', approveMember);
+router.post('/:groupId/members/:memberId/reject', rejectMember);
+router.post('/:groupId/payout-order', setPayoutOrder);
+
+export default router;
+
