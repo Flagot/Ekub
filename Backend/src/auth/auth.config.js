@@ -13,11 +13,28 @@ export function createAuth(db) {
   if (!secret || secret.length < 32) {
     throw new Error('BETTER_AUTH_SECRET must be set and at least 32 characters');
   }
-  const frontendOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:5173';
+  const frontendOrigins = (
+    process.env.FRONTEND_ORIGIN || 'http://localhost:5173'
+  )
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  // Helpful fallbacks during local dev when Vite picks a new port.
+  if (!frontendOrigins.includes('http://localhost:5173')) {
+    frontendOrigins.push('http://localhost:5173');
+  }
+  if (!frontendOrigins.includes('http://127.0.0.1:5173')) {
+    frontendOrigins.push('http://127.0.0.1:5173');
+  }
+  if (!frontendOrigins.includes('http://localhost:5174')) {
+    frontendOrigins.push('http://localhost:5174');
+  }
+
   return betterAuth({
     secret,
     baseURL,
-    trustedOrigins: [frontendOrigin],
+    trustedOrigins: frontendOrigins,
     database: mongodbAdapter(db),
     emailAndPassword: {
       enabled: true,

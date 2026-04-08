@@ -3049,10 +3049,28 @@ function ProtectedRoute({ user, children }) {
 export default function App() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
 
   async function handleLogout() {
-    await authClient.signOut();
-    navigate("/signup");
+    if (loggingOut) return;
+    setLoggingOut(true);
+    setLogoutError("");
+    try {
+      const { error } = await authClient.signOut();
+      if (error) {
+        setLogoutError(error.message || "Could not log out. Please try again.");
+        return;
+      }
+
+      await authClient.getSession();
+      navigate("/login", { replace: true });
+    } catch (error) {
+      console.error("Logout error:", error);
+      setLogoutError("Could not log out. Please try again.");
+    } finally {
+      setLoggingOut(false);
+    }
   }
 
   if (loading) {
@@ -3068,7 +3086,15 @@ export default function App() {
   }
 
   return (
-    <Layout user={user} onLogout={handleLogout}>
+    <>
+      {logoutError && (
+        <div className="fixed inset-x-0 top-3 z-50 mx-auto w-full max-w-md px-4">
+          <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 shadow-sm">
+            {logoutError}
+          </p>
+        </div>
+      )}
+      <Layout user={user} onLogout={handleLogout}>
       <Routes>
         <Route
           path="/"
@@ -3105,6 +3131,7 @@ export default function App() {
           }
         />
       </Routes>
-    </Layout>
+      </Layout>
+    </>
   );
 }
