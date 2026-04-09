@@ -6,6 +6,7 @@ function buildApiBaseURL() {
   // When VITE_API_URL is empty, rely on Vite proxy: "/api" -> backend.
   if (!trimmed) return '/api';
   // Otherwise, call the backend directly.
+  if (trimmed.endsWith('/api')) return trimmed;
   return `${trimmed}/api`;
 }
 
