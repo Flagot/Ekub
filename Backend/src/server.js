@@ -57,6 +57,9 @@ async function start() {
 
     // Public endpoint for landing page (no auth)
     app.get("/api/public/ekubs", listPublicGroupsGuest);
+    app.get("/health", (req, res) => {
+      res.json({ status: "ok", message: "Backend is running" });
+    });
 
     const authMiddleware = createAuthMiddleware(auth);
     app.use("/api/groups", authMiddleware, groupRoutes);
