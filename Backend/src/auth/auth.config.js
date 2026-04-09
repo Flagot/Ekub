@@ -9,6 +9,7 @@ const baseURL = process.env.BETTER_AUTH_URL || 'http://localhost:4000';
  * Client is not passed so transactions are disabled (required for standalone MongoDB, not a replica set).
  */
 export function createAuth(db) {
+  const isProd = process.env.NODE_ENV === 'production';
   const secret = process.env.BETTER_AUTH_SECRET;
   if (!secret || secret.length < 32) {
     throw new Error('BETTER_AUTH_SECRET must be set and at least 32 characters');
@@ -38,6 +39,18 @@ export function createAuth(db) {
     database: mongodbAdapter(db),
     emailAndPassword: {
       enabled: true,
+    },
+    advanced: {
+      // Needed when frontend and backend are on different HTTPS origins (e.g. Vercel + Render).
+      useSecureCookies: isProd,
+      cookies: {
+        session_token: {
+          attributes: {
+            sameSite: isProd ? 'none' : 'lax',
+            secure: isProd,
+          },
+        },
+      },
     },
     session: {
       cookieCache: {

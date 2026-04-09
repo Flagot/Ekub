@@ -21,10 +21,24 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/ekub";
 
+const allowedOrigins = (process.env.FRONTEND_ORIGIN || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+if (allowedOrigins.length === 0) {
+  allowedOrigins.push("https://ekub-mocha.vercel.app");
+}
+
 // CORS with credentials for cookie-based auth (frontend may be on different port in dev)
 app.use(
   cors({
-    origin: process.env.FRONTEND_ORIGIN || "https://ekub-mocha.vercel.app",
+    origin(origin, callback) {
+      // Allow non-browser requests (e.g. curl, server-to-server, health checks)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error(`CORS blocked origin: ${origin}`));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   }),
